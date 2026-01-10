@@ -1,0 +1,25 @@
+query GetBoardItems {  
+  boards(ids: 5743962278) {  
+    items_page(limit: 50) {  
+      items {  
+        id  
+        name  
+        column_values {  
+          id  
+          value 
+          text
+        }
+        subitems {
+          id
+          name
+          column_values {
+            id
+            text
+            value
+            type
+          }
+        }  
+      }  
+    }  
+  }
+}

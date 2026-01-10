@@ -1,0 +1,165 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+.report-container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 20px auto;
+    border: 1px solid #000;
+}
+
+.header-row {
+    background-color: #f0f0f0;
+    border-bottom: 1px solid #000;
+}
+
+.logo-cell {
+    padding: 10px;
+    border-right: 1px solid #000;
+    width: 170px;
+}
+
+.title-cell {
+    padding: 10px;
+    text-align: center;
+    border-right: 1px solid #000;
+}
+
+.info-cell {
+    width: 200px;
+}
+
+.info-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.info-table td {
+    padding: 5px;
+    border: 1px solid #000;
+}
+
+.info-label {
+    background-color: #f0f0f0;
+    font-weight: normal;
+    width: 50%;
+    text-align: right;
+    padding-right: 10px !important;
+}
+
+.info-value {
+    text-align: center;
+}
+
+.section-header {
+    background-color: #006400;
+    color: white;
+    padding: 5px;
+    text-align: center;
+    font-weight: bold;
+    border: 1px solid #000;
+}
+
+.field-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.field-table td {
+    padding: 5px;
+    border: 1px solid #000;
+}
+
+.field-label {
+    background-color: #d3d3d3;
+    width: 170px;
+    text-align: center;
+    font-weight: bold;
+}
+
+.field-value {
+    background-color: white;
+}
+
+.description-header {
+    background-color: #d3d3d3;
+    text-align: center;
+    font-weight: bold;
+    padding: 5px;
+    border: 1px solid #000;
+}
+
+.description-content {
+    min-height: 150px;
+    border: 1px solid #000;
+    padding: 10px;
+    position: relative;
+}
+
+.files-header {
+    background-color: #d3d3d3;
+    text-align: center;
+    font-weight: bold;
+    padding: 5px;
+    border: 1px solid #000;
+}
+
+.treatment-header {
+    background-color: #d3d3d3;
+    text-align: center;
+    font-weight: bold;
+    padding: 5px;
+    border: 1px solid #000;
+}
+
+.treatment-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.treatment-table th {
+    background-color: #d3d3d3;
+    text-align: center;
+    font-weight: bold;
+    padding: 5px;
+    border: 1px solid #000;
+}
+
+.treatment-table td {
+    padding: 5px;
+    border: 1px solid #000;
+    height: 30px;
+}
+
+.conclusions-header {
+    background-color: #d3d3d3;
+    text-align: center;
+    font-weight: bold;
+    padding: 5px;
+    border: 1px solid #000;
+}
+
+.cemag-logo {
+    max-width: 150px;
+    height: auto;
+}
+
+@media print {
+    .report-container {
+        margin: 0;
+        border: none;
+    }
+    
+    body {
+        margin: 0;
+        padding: 0;
+    }
+    
+    @page {
+        size: A4;
+        margin: 0.5cm;
+    }
+}

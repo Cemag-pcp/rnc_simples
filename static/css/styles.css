@@ -1,0 +1,43 @@
+/* Estilos personalizados */
+body {
+    background-color: #f8f9fa;
+}
+
+.card {
+    border-radius: 0.5rem;
+    border: none;
+}
+
+.card-header {
+    border-radius: 0.5rem 0.5rem 0 0 !important;
+}
+
+.btn {
+    border-radius: 0.3rem;
+}
+
+.badge {
+    font-weight: 500;
+    padding: 0.35em 0.65em;
+}
+
+/* Estilos para impressão */
+@media print {
+    body {
+        background-color: white;
+    }
+    
+    .pdf-container {
+        padding: 20px;
+    }
+    
+    .pdf-header {
+        margin-bottom: 30px;
+    }
+    
+    .pdf-footer {
+        position: fixed;
+        bottom: 20px;
+        width: 100%;
+    }
+}
