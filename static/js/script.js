@@ -1,4 +1,4 @@
-import { fetchReports, hasNextPage, resetCursor, carregarSetores, carregarStatus } from './data-monday.js';
+import { fetchReports, hasNextPage, resetCursor, carregarSetores, carregarStatus, carregarOrigem, carregarSubitemStatus } from './data-monday.js';
 
 // Variáveis globais
 let currentPage = 1;
@@ -14,8 +14,12 @@ const nextPageButton = document.getElementById('nextPage');
 const applyFiltersButton = document.getElementById('applyFilters');
 const clearFiltersButton = document.getElementById('clearFilters');
 const loadMoreButton = document.getElementById('load-more');
+const selectAllBtn = document.getElementById('selectAllBtn');
+const printSelectedBtn = document.getElementById('printSelectedBtn');
+const selectedCountSpan = document.getElementById('selectedCount');
 let currentFilters = {}; // global
 let nextCursor = null; // global
+let selectedReports = new Set(); // Para armazenar IDs dos relatórios selecionados
 
 // Filtros
 const statusFilter = document.getElementById('statusFilter');
@@ -23,6 +27,11 @@ const dateFilter = document.getElementById('dateFilter');
 const sectorFilter = document.getElementById('sectorFilter');
 const personFilter = document.getElementById('personFilter');
 const idFilter = document.getElementById('idRelatorio');
+const garantiaFilter = document.getElementById('garantiaFilter');
+const subitemResponsavelFilter = document.getElementById('subitemResponsavelFilter');
+const subitemStatusFilter = document.getElementById('subitemStatusFilter');
+const subitemPrevisaoInicio = document.getElementById('subitemPrevisaoInicio');
+const subitemPrevisaoFim = document.getElementById('subitemPrevisaoFim');
 
 // Event listener do botão "Carregar mais"
 // document.getElementById('load-more').addEventListener('click', () => {
@@ -54,7 +63,14 @@ document.addEventListener('DOMContentLoaded', function () {
       }
     }, 500));
   
-    [statusFilter, dateFilter, sectorFilter, personFilter, idFilter].forEach(filter => {
+    subitemResponsavelFilter.addEventListener('input', debounce(function () {
+      if (this.value.length === 0 || this.value.length > 2) {
+        applyFilters();
+      }
+    }, 500));
+  
+    
+    [statusFilter, dateFilter, sectorFilter, personFilter, idFilter, garantiaFilter, subitemResponsavelFilter, subitemStatusFilter, subitemPrevisaoInicio, subitemPrevisaoFim].forEach(filter => {
       filter.addEventListener('keypress', function (e) {
         if (e.key === 'Enter') {
           applyFilters();
@@ -69,10 +85,17 @@ document.addEventListener('DOMContentLoaded', function () {
     if (urlParams.has('sector')) sectorFilter.value = urlParams.get('sector');
     if (urlParams.has('person')) personFilter.value = urlParams.get('person');
     if (urlParams.has('id')) idFilter.value = urlParams.get('id');
+    if (urlParams.has('garantia')) garantiaFilter.value = urlParams.get('garantia');
+    if (urlParams.has('subitemResponsavel')) subitemResponsavelFilter.value = urlParams.get('subitemResponsavel');
+    if (urlParams.has('subitemStatus')) subitemStatusFilter.value = urlParams.get('subitemStatus');
+    if (urlParams.has('subitemPrevisaoInicio')) subitemPrevisaoInicio.value = urlParams.get('subitemPrevisaoInicio');
+    if (urlParams.has('subitemPrevisaoFim')) subitemPrevisaoFim.value = urlParams.get('subitemPrevisaoFim');
   
     if (
       urlParams.has('status') || urlParams.has('date') || urlParams.has('sector') ||
-      urlParams.has('person') || urlParams.has('id')
+      urlParams.has('person') || urlParams.has('id') || urlParams.has('garantia') ||
+      urlParams.has('subitemResponsavel') || urlParams.has('subitemStatus') ||
+      urlParams.has('subitemPrevisaoInicio') || urlParams.has('subitemPrevisaoFim')
     ) {
         applyFilters();
     } else {
@@ -81,6 +104,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
     carregarSetores();
     carregarStatus();
+    carregarOrigem();
+    carregarSubitemStatus();
+
+    // Event listeners para seleção múltipla
+    selectAllBtn.addEventListener('click', toggleSelectAll);
+    printSelectedBtn.addEventListener('click', printSelectedReports);
 });
 
 // Funções
@@ -90,6 +119,11 @@ function applyFilters() {
     const sector = sectorFilter.value;
     const person = personFilter.value;
     const id = idFilter.value;
+    const garantia = garantiaFilter.value;
+    const subitemResponsavel = subitemResponsavelFilter.value;
+    const subitemStatus = subitemStatusFilter.value;
+    const previsaoInicio = subitemPrevisaoInicio.value;
+    const previsaoFim = subitemPrevisaoFim.value;
 
     resetCursor(); // zera a paginação
   
@@ -100,6 +134,11 @@ function applyFilters() {
     if (sector) url.searchParams.set('sector', sector); else url.searchParams.delete('sector');
     if (person) url.searchParams.set('person', person); else url.searchParams.delete('person');
     if (id) url.searchParams.set('id', id); else url.searchParams.delete('id');
+    if (garantia) url.searchParams.set('garantia', garantia); else url.searchParams.delete('garantia');
+    if (subitemResponsavel) url.searchParams.set('subitemResponsavel', subitemResponsavel); else url.searchParams.delete('subitemResponsavel');
+    if (subitemStatus) url.searchParams.set('subitemStatus', subitemStatus); else url.searchParams.delete('subitemStatus');
+    if (previsaoInicio) url.searchParams.set('subitemPrevisaoInicio', previsaoInicio); else url.searchParams.delete('subitemPrevisaoInicio');
+    if (previsaoFim) url.searchParams.set('subitemPrevisaoFim', previsaoFim); else url.searchParams.delete('subitemPrevisaoFim');
     window.history.replaceState({}, '', url);
   
     // Resetar paginação
@@ -113,6 +152,11 @@ function applyFilters() {
     if (id) filters.id = id;
     if (sector) filters.sector = sector;
     if (date) filters.date = date;
+    if (garantia) filters.garantia = garantia;
+    if (subitemResponsavel) filters.subitemResponsavel = subitemResponsavel;
+    if (subitemStatus) filters.subitemStatus = subitemStatus;
+    if (previsaoInicio) filters.subitemPrevisaoInicio = previsaoInicio;
+    if (previsaoFim) filters.subitemPrevisaoFim = previsaoFim;
   
     // Salvar filtros atuais e renderizar
     currentFilters = filters;
@@ -126,6 +170,11 @@ function clearFilters() {
     sectorFilter.value = '';
     personFilter.value = '';
     idRelatorio.value = '';
+    garantiaFilter.value = '';
+    subitemResponsavelFilter.value = '';
+    subitemStatusFilter.value = '';
+    subitemPrevisaoInicio.value = '';
+    subitemPrevisaoFim.value = '';
 
     // Limpar parâmetros de URL
     const url = new URL(window.location);
@@ -264,6 +313,24 @@ async function renderReports(filters = {}, append = false) {
             if (typeof personValue === "string") dataCriacao = personValue.replace(/"/g, '');
             }
         }
+
+        // Origem
+        let origemBadge = '';
+        const origemColumn = report.column_values.find(col => col.id === "status3");
+        if (origemColumn?.text) {
+            const origemText = origemColumn.text;
+            const origemMap = {
+                'RECEBIMENTO': '<span class="badge bg-primary">RECEBIMENTO</span>',
+                'GARANTIA': '<span class="badge bg-success">GARANTIA</span>',
+                'INSPEÇÃO': '<span class="badge bg-info">INSPEÇÃO</span>',
+                'PROCESSO': '<span class="badge bg-warning text-dark">PROCESSO</span>',
+                'AUDITORIA INTERNA': '<span class="badge bg-danger">AUDITORIA INTERNA</span>',
+                'AUDITORIA EXTERNA': '<span class="badge bg-dark">AUDITORIA EXTERNA</span>',
+                'CLIENTE': '<span class="badge bg-secondary">CLIENTE</span>'
+            };
+            origemBadge = origemMap[origemText] || `<span class="badge bg-light text-dark">${origemText}</span>`;
+        }
+
         const subitemsCount = report.subitems?.length || 0;
 
         const reportCard = document.createElement('div');
@@ -271,10 +338,14 @@ async function renderReports(filters = {}, append = false) {
         reportCard.innerHTML = `
             <div class="card-body">
             <div class="row align-items-center">
-                <div class="col-md-10">
+                <div class="col-auto">
+                    <input type="checkbox" class="form-check-input report-checkbox" data-report-id="${report.id}" style="width: 20px; height: 20px; cursor: pointer;">
+                </div>
+                <div class="col-md-9">
                 <h5 class="card-title mb-1">${report.name}</h5>
                 <div class="d-flex flex-wrap gap-2 mb-2">
                     ${statusBadge}
+                    ${origemBadge}
                     <small class="text-muted">Responsável: ${responsible}</small>
                     <small class="text-muted">ID: ${report.id}</small>
                     <small class="text-muted">Setor: ${setor}</small>
@@ -285,14 +356,23 @@ async function renderReports(filters = {}, append = false) {
                     <ul class="list-group">
                         ${report.subitems.map(sub => {
                         const lastUpdate = sub.column_values.find(col => col.id === "_ltima_atualiza__o")?.text || "Sem data";
-                        const responsavel = sub.column_values.find(col => col.id === "respons_vel")?.text || "Sem data";
+                        const responsavel = sub.column_values.find(col => col.id === "respons_vel")?.text || "Sem responsável";
                         const statusSubitem = sub.column_values.find(col => col.id === "status")?.text || "Sem status";
+                        const previsaoColumn = sub.column_values.find(col => col.id === "previs_o");
+                        let previsaoText = "Sem previsão";
+                        if (previsaoColumn?.text) {
+                            previsaoText = previsaoColumn.text;
+                        }
                         return `
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                            ${sub.name}
-                            <span class="badge bg-light text-secondary small">${lastUpdate}</span>
-                            <span class="badge bg-light text-secondary small">${responsavel}</span>
-                            <span class="badge bg-light text-secondary small">${statusSubitem}</span>
+                            <li class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="flex-grow-1">${sub.name}</div>
+                                <div class="d-flex gap-2 flex-wrap">
+                                    <span class="badge bg-light text-secondary small">Previsão: ${previsaoText}</span>
+                                    <span class="badge bg-light text-secondary small">Resp: ${responsavel}</span>
+                                    <span class="badge bg-light text-secondary small">${statusSubitem}</span>
+                                </div>
+                            </div>
                             </li>
                         `;
                         }).join('')}
@@ -309,6 +389,17 @@ async function renderReports(filters = {}, append = false) {
         `;
 
         reportListElement.appendChild(reportCard);
+
+        // Adicionar event listener ao checkbox
+        const checkbox = reportCard.querySelector('.report-checkbox');
+        checkbox.addEventListener('change', function() {
+            if (this.checked) {
+                selectedReports.add(report.id);
+            } else {
+                selectedReports.delete(report.id);
+            }
+            updateSelectionUI();
+        });
     });
 
     loadMoreButton.style.display = hasNextPage() ? 'block' : 'none';
@@ -377,6 +468,59 @@ function debounce(func, wait) {
         clearTimeout(timeout);
         timeout = setTimeout(later, wait);
     };
+}
+
+// Funções para seleção múltipla
+function updateSelectionUI() {
+    const count = selectedReports.size;
+    selectedCountSpan.textContent = count;
+    
+    if (count > 0) {
+        printSelectedBtn.style.display = 'inline-block';
+    } else {
+        printSelectedBtn.style.display = 'none';
+    }
+
+    // Atualizar texto do botão selecionar todos
+    const allCheckboxes = document.querySelectorAll('.report-checkbox');
+    const allChecked = allCheckboxes.length > 0 && 
+                      Array.from(allCheckboxes).every(cb => cb.checked);
+    
+    if (allChecked) {
+        selectAllBtn.innerHTML = '<i class="bi bi-square"></i> Desmarcar Todos';
+    } else {
+        selectAllBtn.innerHTML = '<i class="bi bi-check-square"></i> Selecionar Todos';
+    }
+}
+
+function toggleSelectAll() {
+    const allCheckboxes = document.querySelectorAll('.report-checkbox');
+    const allChecked = Array.from(allCheckboxes).every(cb => cb.checked);
+    
+    allCheckboxes.forEach(checkbox => {
+        checkbox.checked = !allChecked;
+        const reportId = checkbox.dataset.reportId;
+        
+        if (checkbox.checked) {
+            selectedReports.add(reportId);
+        } else {
+            selectedReports.delete(reportId);
+        }
+    });
+    
+    updateSelectionUI();
+}
+
+function printSelectedReports() {
+    if (selectedReports.size === 0) {
+        alert('Nenhum relatório selecionado.');
+        return;
+    }
+
+    // Abrir cada relatório em uma nova aba
+    selectedReports.forEach(reportId => {
+        window.open(`report?id=${reportId}`, '_blank');
+    });
 }
 
 // Função para exportar relatórios para CSV

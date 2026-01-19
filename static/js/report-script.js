@@ -286,8 +286,6 @@ function getFieldValue(report, columnId) {
     const col = report.column_values.find(col => col.id === columnId);
     if (!col) return 'N/A';
   
-    
-  
     // 1. Se for campo de data ou log, prioriza o parse da data
     if ((columnId.includes('data') || columnId.includes('log')) && col.value) {
         try {
@@ -344,7 +342,16 @@ function getFieldValue(report, columnId) {
         const parsed = JSON.parse(col.value);
         if (parsed.text) return parsed.text;
         if (typeof parsed === 'string') return parsed;
-        return col.value;
+        // Se for um objeto, tentar extrair informações relevantes
+        if (typeof parsed === 'object') {
+          // Se tiver ids, pode ser um campo de status ou similar
+          if (parsed.ids && Array.isArray(parsed.ids)) {
+            return col.text || 'N/A';
+          }
+          // Outros objetos, retornar N/A
+          return 'N/A';
+        }
+        return String(col.value);
       } catch {
         return col.value.replace(/"/g, '');
       }
