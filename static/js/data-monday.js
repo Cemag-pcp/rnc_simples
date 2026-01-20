@@ -79,7 +79,7 @@ export async function fetchReports(filters = {}, useCursor = false) {
     // Filtro por outras colunas
     const filterRules = [];
     
-    if (status) filterRules.push(`{ column_id: "status", compare_value: "${status}", operator: contains_terms }`);
+    if (status) filterRules.push(`{ column_id: "status8", compare_value: "${status}", operator: contains_terms }`);
     if (person) filterRules.push(`{ column_id: "person", compare_value: ["${person}"], operator: contains_terms }`);
     if (name) filterRules.push(`{ column_id: "name", compare_value: "${name}", operator: contains }`);
     if (sector) filterRules.push(`{ column_id: "setor5", compare_value: "${sector}", operator: contains_terms }`);

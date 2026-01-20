@@ -50,6 +50,8 @@ def monday_query():
             json={'query': query},
             headers=headers
         )
+
+        print(query)
         
         return jsonify(response.json())
     

@@ -230,7 +230,7 @@ async function renderReports(filters = {}, append = false) {
     todosRelatorios = [...todosRelatorios, ...items]; // acumula os novos
     
     items.forEach(report => {
-        const statusText = report.column_values.find(col => col.id === "status")?.text || '';
+        const statusText = report.column_values.find(col => col.id === "status8")?.text || '';
         const dateValue = report.column_values.find(col => col.id === "data")?.value;
         const personValue = report.column_values.find(col => col.id === "person")?.value || 
                             report.column_values.find(col => col.id === "pessoas1")?.value;
