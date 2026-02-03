@@ -50,10 +50,6 @@ function criarPrimeiraEtapa(report) {
         <td colspan="5" class="section-header">1ª ETAPA - ABERTURA</td>
       </tr>
       <tr>
-        <td style="width: 20%;"><strong>Status:</strong></td>
-        <td colspan="4">${getFieldValue(report, 'status')}</td>
-      </tr>
-      <tr>
         <td><strong>RNC Nº: </strong>${report.id}</td>
         <td style="width: 30%;"><strong>Origem: </strong>${getFieldValue(report, 'id')}</td>
         <td colspan="2"><strong>Resp.: </strong>${getFieldValue(report, 'person')}</td>
@@ -198,6 +194,12 @@ function criarTerceiraEtapa(report) {
         document.getElementById("table-analise-causa-raiz").style.display = "none";
     }
 
+    const analiseTexto = document.getElementById("analise-texto");
+    if (analiseTexto) {
+        const valorAnalise = getFieldValue(report, 'long_text_mkpb7gyj');
+        analiseTexto.innerHTML = valorAnalise === "N/A" ? "" : valorAnalise;
+    }
+
     return table;
 }
 
@@ -245,9 +247,7 @@ function criarQuintaEtapa(report) {
         </tr>
 
         <table style="margin-top: -1px;">
-            <tr>
                 <td><strong>As ações corretivas foram eficazes? (Caso não, abrir nova RNC): </strong>${getFieldValue(report, 'avalia__o')}★</td>
-                <td><strong>Nº da RNC: </strong>${report.id}</td>
             </tr>
         </table>
     `;
@@ -263,6 +263,7 @@ function renderReport(report) {
     const contentSegundaEtapa = document.getElementById("etapa-2");
     const contentTerceiraEtapa = document.getElementById("etapa-3");
     const contentQuintaEtapa = document.getElementById("etapa-5");
+    const conclusaoElement = document.getElementById("conclusao");
 
     // 
     const primeiraEtapa = criarPrimeiraEtapa(report);
@@ -277,6 +278,10 @@ function renderReport(report) {
     contentQuintaEtapa.appendChild(quintaEtapa);
 
     preencherQuartaEtapa(report);
+
+    if (conclusaoElement) {
+        conclusaoElement.innerHTML = getFieldValue(report, 'texto8');
+    }
 
 }
 
